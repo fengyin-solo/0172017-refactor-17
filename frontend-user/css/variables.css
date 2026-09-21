@@ -1,76 +1,336 @@
 /* ========================================
-   CSS 变量 - 设计系统
+   设计变量（Design Tokens）
+   ----------------------------------------
+   分层（只允许上层引用下层）：
+     1. 原始调色板  --color-*（基准色 + 通道值 + 深浅派生）
+     2. 语义令牌    --color-primary / --color-danger / --text-* …
+     3. 派生令牌    渐变 / 玻璃表面 / 阴影辉光
+     4. 结构令牌    间距 / 圆角 / 动效 / 层级 / 字体
+
+   共用写法：
+     · 不透明度派生统一使用通道变量：
+         rgba(var(--color-primary-rgb, 168, 85, 247), 0.15)
+       通道变量缺失时回退到括号内的默认 r,g,b，不会产生空白样式。
+     · 深浅派生统一以 -light（更亮）/ -deep（更深）命名，
+       语义色（如 --color-danger-deep）由调色板派生而来。
+     · 消费侧每个 var() 都带默认值，variables.css 未加载时样式仍成立。
    ======================================== */
 
 :root {
-    /* 主色调 */
-    --bg-dark: #0a0a0f;
-    --bg-darker: #050508;
-    --bg-card: rgba(20, 20, 35, 0.7);
-    --bg-card-hover: rgba(30, 30, 50, 0.8);
-    
-    /* 霓虹色系 */
-    --neon-purple: #a855f7;
-    --neon-purple-light: #c084fc;
-    --neon-pink: #ec4899;
-    --neon-pink-light: #f472b6;
-    --neon-cyan: #06b6d4;
-    --neon-cyan-light: #22d3ee;
-    --neon-green: #10b981;
-    --neon-green-light: #34d399;
-    --neon-blue: #3b82f6;
-    --neon-orange: #f97316;
-    --neon-yellow: #eab308;
-    
-    /* 状态色 */
-    --success: #10b981;
-    --warning: #f59e0b;
-    --error: #ef4444;
-    --info: #3b82f6;
-    
-    /* 文字色 */
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    
-    /* 边框 */
-    --glass-border: rgba(168, 85, 247, 0.3);
-    --glass-border-hover: rgba(168, 85, 247, 0.5);
-    
-    /* 阴影 */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.4);
-    --shadow-glow-purple: 0 0 30px rgba(168, 85, 247, 0.4);
-    --shadow-glow-pink: 0 0 30px rgba(236, 72, 153, 0.4);
-    --shadow-glow-cyan: 0 0 30px rgba(6, 182, 212, 0.4);
-    
-    /* 渐变 */
-    --gradient-purple-pink: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
-    --gradient-cyan-green: linear-gradient(135deg, var(--neon-cyan), var(--neon-green));
-    --gradient-blue-purple: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
-    
-    /* 间距 */
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
-    --spacing-2xl: 48px;
-    
+    /* ============================================================
+       1. 原始调色板（Palette Primitives）
+       每个颜色提供：基准色值 + “r, g, b”通道值（供透明度派生）
+       ============================================================ */
+
+    /* 品牌主色族（紫色）：基准 / 浅色派生 */
+    --color-purple: #a855f7;
+    --color-purple-rgb: 168, 85, 247;
+    --color-purple-light: #c084fc;
+    --color-purple-light-rgb: 192, 132, 252;
+
+    /* 品牌辅色族（粉色） */
+    --color-pink: #ec4899;
+    --color-pink-rgb: 236, 72, 153;
+    --color-pink-light: #f472b6;
+    --color-pink-light-rgb: 244, 114, 182;
+
+    /* 强调色族（青色） */
+    --color-cyan: #06b6d4;
+    --color-cyan-rgb: 6, 182, 212;
+    --color-cyan-light: #22d3ee;
+    --color-cyan-light-rgb: 34, 211, 238;
+
+    /* 成功色族（绿色）：基准 / 浅色 / 深色（渐变末端用） */
+    --color-green: #10b981;
+    --color-green-rgb: 16, 185, 129;
+    --color-green-light: #34d399;
+    --color-green-light-rgb: 52, 211, 153;
+    --color-green-deep: #059669;
+    --color-green-deep-rgb: 5, 150, 105;
+
+    /* 危险色族（红色） */
+    --color-red: #ef4444;
+    --color-red-rgb: 239, 68, 68;
+    --color-red-deep: #dc2626;
+    --color-red-deep-rgb: 220, 38, 38;
+
+    /* 警示色族（琥珀色） */
+    --color-amber: #f59e0b;
+    --color-amber-rgb: 245, 158, 11;
+
+    /* 其他点缀色 */
+    --color-blue: #3b82f6;
+    --color-blue-rgb: 59, 130, 246;
+    --color-orange: #f97316;
+    --color-orange-rgb: 249, 115, 22;
+    --color-yellow: #eab308;
+    --color-yellow-rgb: 234, 179, 8;
+
+    /* 中性色 */
+    --color-white: #ffffff;
+    --color-white-rgb: 255, 255, 255;
+    --color-black: #000000;
+    --color-black-rgb: 0, 0, 0;
+
+    /* 背景底色（深色层次：页面 < 深底） */
+    --color-bg: #0a0a0f;
+    --color-bg-rgb: 10, 10, 15;
+    --color-bg-deep: #050508;
+    --color-bg-deep-rgb: 5, 5, 8;
+    --color-surface: #141423;          /* 玻璃卡片基色 */
+    --color-surface-rgb: 20, 20, 35;
+    --color-surface-hover: #1e1e32;    /* 卡片悬停基色 */
+    --color-surface-hover-rgb: 30, 30, 50;
+    --color-sidebar: #0a0a12;          /* 侧栏基色 */
+    --color-sidebar-rgb: 10, 10, 18;
+
+    /* 文字三档 */
+    --color-text: #f8fafc;
+    --color-text-rgb: 248, 250, 252;
+    --color-text-secondary: #94a3b8;
+    --color-text-secondary-rgb: 148, 163, 184;
+    --color-text-muted: #64748b;
+    --color-text-muted-rgb: 100, 116, 139;
+
+    /* ============================================================
+       2. 语义令牌（Semantic Tokens）——组件只应使用这一层及以下
+       ============================================================ */
+
+    /* 品牌主色（紫） */
+    --color-primary: var(--color-purple);
+    --color-primary-rgb: var(--color-purple-rgb, 168, 85, 247);
+    --color-primary-light: var(--color-purple-light);
+    --color-primary-light-rgb: var(--color-purple-light-rgb, 192, 132, 252);
+
+    /* 品牌辅色（粉） */
+    --color-accent: var(--color-pink);
+    --color-accent-rgb: var(--color-pink-rgb, 236, 72, 153);
+    --color-accent-light: var(--color-pink-light);
+    --color-accent-light-rgb: var(--color-pink-light-rgb, 244, 114, 182);
+
+    /* 强调色（青，链接 / 数据高亮） */
+    --color-highlight: var(--color-cyan);
+    --color-highlight-rgb: var(--color-cyan-rgb, 6, 182, 212);
+    --color-highlight-light: var(--color-cyan-light);
+    --color-highlight-light-rgb: var(--color-cyan-light-rgb, 34, 211, 238);
+
+    /* 状态色：成功 / 危险 / 警示 / 信息（统一派生自调色板） */
+    --color-success: var(--color-green);
+    --color-success-rgb: var(--color-green-rgb, 16, 185, 129);
+    --color-success-light: var(--color-green-light);
+    --color-success-light-rgb: var(--color-green-light-rgb, 52, 211, 153);
+    --color-success-deep: var(--color-green-deep);
+
+    --color-danger: var(--color-red);
+    --color-danger-rgb: var(--color-red-rgb, 239, 68, 68);
+    --color-danger-deep: var(--color-red-deep);
+
+    --color-warning: var(--color-amber);
+    --color-warning-rgb: var(--color-amber-rgb, 245, 158, 11);
+
+    --color-info: var(--color-blue);
+    --color-info-rgb: var(--color-blue-rgb, 59, 130, 246);
+
+    /* 文字语义 */
+    --text-strong: var(--color-text);                    /* 标题、主文字 */
+    --text-base: var(--color-text-secondary);            /* 正文、说明 */
+    --text-muted: var(--color-text-muted);               /* 弱化、脚注 */
+    --text-on-color: var(--color-white);                 /* 彩色底上的文字 */
+
+    /* 背景 / 表面（基色 + 透明度的派生） */
+    --bg-app: var(--color-bg);
+    --bg-app-deep: var(--color-bg-deep);
+    --bg-surface: rgba(var(--color-surface-rgb, 20, 20, 35), 0.7);
+    --bg-surface-hover: rgba(var(--color-surface-hover-rgb, 30, 30, 50), 0.8);
+    --bg-surface-strong: rgba(var(--color-surface-rgb, 20, 20, 35), 0.95);
+    --bg-surface-soft: rgba(var(--color-surface-rgb, 20, 20, 35), 0.5);
+    --bg-sidebar: rgba(var(--color-sidebar-rgb, 10, 10, 18), 0.92);
+    --bg-scrim: rgba(var(--color-black-rgb, 0, 0, 0), 0.35);
+
+    /* 玻璃描边（主色的透明度派生） */
+    --border-glass: rgba(var(--color-primary-rgb, 168, 85, 247), 0.3);
+    --border-glass-hover: rgba(var(--color-primary-rgb, 168, 85, 247), 0.5);
+
+    /* ============================================================
+       3. 派生令牌：渐变 / 阴影 / 辉光
+       ============================================================ */
+
+    /* 品牌渐变（方向写进名字，避免同一渐变重复书写） */
+    --gradient-brand: linear-gradient(135deg, var(--color-primary, #a855f7), var(--color-accent, #ec4899));
+    --gradient-brand-vertical: linear-gradient(180deg, var(--color-primary, #a855f7), var(--color-accent, #ec4899));
+    --gradient-brand-horizontal: linear-gradient(90deg, var(--color-primary, #a855f7), var(--color-accent, #ec4899));
+    --gradient-brand-strong: linear-gradient(135deg,
+        rgba(var(--color-primary-rgb, 168, 85, 247), 0.85),
+        rgba(var(--color-accent-rgb, 236, 72, 153), 0.85));
+    --gradient-brand-blue: linear-gradient(135deg, var(--color-info, #3b82f6), var(--color-primary, #a855f7));
+
+    /* 文字渐变 */
+    --gradient-heading: linear-gradient(135deg,
+        var(--color-white, #ffffff) 0%,
+        var(--color-primary, #a855f7) 40%,
+        var(--color-accent, #ec4899) 70%,
+        var(--color-highlight, #06b6d4) 100%);
+    --gradient-heading-sidebar: linear-gradient(135deg, var(--color-white, #ffffff), var(--color-primary-light, #c084fc));
+
+    /* 成功 / 危险 / 警示渐变（深浅色派生末端） */
+    --gradient-success: linear-gradient(135deg, var(--color-success, #10b981), var(--color-success-deep, #059669));
+    --gradient-success-highlight: linear-gradient(135deg, var(--color-highlight, #06b6d4), var(--color-success, #10b981));
+    --gradient-success-highlight-vertical: linear-gradient(180deg, var(--color-success, #10b981), var(--color-highlight, #06b6d4));
+    --gradient-success-highlight-horizontal: linear-gradient(90deg, var(--color-success, #10b981), var(--color-highlight, #06b6d4));
+
+    --gradient-danger: linear-gradient(135deg, var(--color-danger, #ef4444), var(--color-danger-deep, #dc2626));
+    --gradient-danger-orange-vertical: linear-gradient(180deg, var(--color-danger, #ef4444), var(--color-orange, #f97316));
+    --gradient-danger-orange-horizontal: linear-gradient(90deg, var(--color-danger, #ef4444), var(--color-orange, #f97316));
+
+    --gradient-warning-yellow-vertical: linear-gradient(180deg, var(--color-warning, #f59e0b), var(--color-yellow, #eab308));
+    --gradient-warning-yellow-horizontal: linear-gradient(90deg, var(--color-warning, #f59e0b), var(--color-yellow, #eab308));
+    --gradient-info-vertical: linear-gradient(180deg, var(--color-primary, #a855f7), var(--color-accent, #ec4899));
+    --gradient-info-horizontal: linear-gradient(90deg, var(--color-primary, #a855f7), var(--color-accent, #ec4899));
+
+    /* 组件专用的透明度派生渐变 */
+    --gradient-table-head: linear-gradient(135deg,
+        rgba(var(--color-primary-rgb, 168, 85, 247), 0.25),
+        rgba(var(--color-accent-rgb, 236, 72, 153), 0.15));
+    --gradient-section-title: linear-gradient(90deg,
+        rgba(var(--color-primary-rgb, 168, 85, 247), 0.15), transparent);
+    --gradient-dimension-cell: linear-gradient(135deg,
+        rgba(var(--color-primary-rgb, 168, 85, 247), 0.12), transparent);
+    --gradient-cell-current: linear-gradient(135deg,
+        rgba(var(--color-danger-rgb, 239, 68, 68), 0.15),
+        rgba(var(--color-danger-rgb, 239, 68, 68), 0.03));
+    --gradient-cell-target: linear-gradient(135deg,
+        rgba(var(--color-success-rgb, 16, 185, 129), 0.15),
+        rgba(var(--color-success-rgb, 16, 185, 129), 0.03));
+    --gradient-sidebar-current: linear-gradient(135deg,
+        rgba(var(--color-danger-rgb, 239, 68, 68), 0.08),
+        rgba(var(--color-danger-rgb, 239, 68, 68), 0.02));
+    --gradient-sidebar-target: linear-gradient(135deg,
+        rgba(var(--color-success-rgb, 16, 185, 129), 0.08),
+        rgba(var(--color-success-rgb, 16, 185, 129), 0.02));
+    --gradient-quickwin-number: linear-gradient(135deg,
+        rgba(var(--color-primary-rgb, 168, 85, 247), 0.08), transparent);
+    --gradient-header-divider: linear-gradient(90deg,
+        transparent, var(--color-primary, #a855f7), transparent);
+    --gradient-sidebar-divider: linear-gradient(90deg,
+        rgba(var(--color-highlight-rgb, 6, 182, 212), 0.3), transparent);
+    --gradient-scrollbar: linear-gradient(180deg, var(--color-primary, #a855f7), var(--color-accent, #ec4899));
+    --gradient-scrollbar-hover: linear-gradient(180deg, var(--color-primary-light, #c084fc), var(--color-accent-light, #f472b6));
+
+    /* 阴影（黑色透明度派生） */
+    --shadow-sm: 0 2px 8px rgba(var(--color-black-rgb, 0, 0, 0), 0.2);
+    --shadow-md: 0 8px 32px rgba(var(--color-black-rgb, 0, 0, 0), 0.3);
+    --shadow-lg: 0 20px 60px rgba(var(--color-black-rgb, 0, 0, 0), 0.4);
+    --shadow-xl: -10px 0 40px rgba(var(--color-black-rgb, 0, 0, 0), 0.5);
+
+    /* 辉光（品牌色透明度派生） */
+    --glow-primary: 0 0 30px rgba(var(--color-primary-rgb, 168, 85, 247), 0.4);
+    --glow-accent: 0 0 30px rgba(var(--color-accent-rgb, 236, 72, 153), 0.4);
+    --glow-highlight: 0 0 30px rgba(var(--color-highlight-rgb, 6, 182, 212), 0.4);
+
+    /* ============================================================
+       4. 结构令牌
+       ============================================================ */
+
+    /* 间距：4px 基准，--space-N = N × 2px（_ 表示半档，如 space-2_5 = 5px） */
+    --space-0_5: 1px;
+    --space-1: 2px;
+    --space-1_5: 3px;
+    --space-2: 4px;
+    --space-2_5: 5px;
+    --space-3: 6px;
+    --space-4: 8px;
+    --space-5: 10px;
+    --space-6: 12px;
+    --space-7: 14px;
+    --space-8: 16px;
+    --space-9: 18px;
+    --space-10: 20px;
+    --space-12: 24px;
+    --space-14: 28px;
+    --space-16: 32px;
+    --space-20: 40px;
+    --space-24: 48px;
+    --space-25: 50px;
+
     /* 圆角 */
+    --radius-2: 2px;
+    --radius-3: 3px;
+    --radius-4: 4px;
     --radius-sm: 6px;
     --radius-md: 12px;
     --radius-lg: 16px;
     --radius-xl: 24px;
     --radius-full: 9999px;
-    
-    /* 过渡 */
-    --transition-fast: 0.15s ease;
-    --transition-normal: 0.3s ease;
-    --transition-slow: 0.5s ease;
-    
+
+    /* 动效：时长 / 缓动 / 常用组合 */
+    --duration-fast: 0.15s;
+    --duration-normal: 0.3s;
+    --duration-sidebar: 0.4s;
+    --duration-slow: 0.5s;
+    --duration-score: 0.8s;
+    --ease-standard: ease;
+    --ease-emphasized: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --transition-fast: var(--duration-fast) var(--ease-standard);
+    --transition-normal: var(--duration-normal) var(--ease-standard);
+    --transition-slow: var(--duration-slow) var(--ease-standard);
+
+    /* 层级 */
+    --z-bg: -2;
+    --z-overlay: -1;
+    --z-sidebar-toggle: 1001;
+    --z-sidebar: 1002;
+    --z-toast: 10000;
+
     /* 字体 */
     --font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+
+    /* ============================================================
+       5. 向后兼容别名（旧变量名 → 新令牌，供存量内联样式/第三方使用）
+       ============================================================ */
+    --bg-dark: var(--bg-app);
+    --bg-darker: var(--bg-app-deep);
+    --bg-card: var(--bg-surface);
+    --bg-card-hover: var(--bg-surface-hover);
+
+    --neon-purple: var(--color-primary);
+    --neon-purple-light: var(--color-primary-light);
+    --neon-pink: var(--color-accent);
+    --neon-pink-light: var(--color-accent-light);
+    --neon-cyan: var(--color-highlight);
+    --neon-cyan-light: var(--color-highlight-light);
+    --neon-green: var(--color-success);
+    --neon-green-light: var(--color-success-light);
+    --neon-blue: var(--color-info);
+    --neon-orange: var(--color-orange);
+    --neon-yellow: var(--color-yellow);
+
+    --success: var(--color-success);
+    --warning: var(--color-warning);
+    --error: var(--color-danger);
+    --info: var(--color-info);
+
+    --text-primary: var(--text-strong);
+    --text-secondary: var(--text-base);
+    /* --text-muted 与新语义令牌同名，无需再别名 */
+
+    --glass-border: var(--border-glass);
+    --glass-border-hover: var(--border-glass-hover);
+
+    --shadow-glow-purple: var(--glow-primary);
+    --shadow-glow-pink: var(--glow-accent);
+    --shadow-glow-cyan: var(--glow-highlight);
+
+    --gradient-purple-pink: var(--gradient-brand);
+    --gradient-cyan-green: var(--gradient-success-highlight);
+    --gradient-blue-purple: var(--gradient-brand-blue);
+
+    --spacing-xs: var(--space-2);
+    --spacing-sm: var(--space-4);
+    --spacing-md: var(--space-8);
+    --spacing-lg: var(--space-12);
+    --spacing-xl: var(--space-16);
+    --spacing-2xl: var(--space-24);
 }

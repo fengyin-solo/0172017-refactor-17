@@ -58,7 +58,7 @@ class ComponentRenderer {
             html += `
                 <th>
                     <div style="font-weight: 700;">${p.name}</div>
-                    <div style="font-size: 12px; color: var(--neon-cyan); margin-top: 6px; opacity: 0.9;">
+                    <div style="font-size: 12px; color: var(--color-highlight, #06b6d4); margin-top: var(--space-3, 6px); opacity: 0.9;">
                         焦点: ${p.subtitle}
                     </div>
                 </th>
@@ -173,7 +173,12 @@ class ComponentRenderer {
         const container = document.querySelector('.particles');
         if (!container) return;
 
-        const colors = ['#a855f7', '#ec4899', '#06b6d4', '#10b981'];
+        const colors = [
+            THEME.get('--color-primary', '#a855f7'),
+            THEME.get('--color-accent', '#ec4899'),
+            THEME.get('--color-highlight', '#06b6d4'),
+            THEME.get('--color-success', '#10b981')
+        ];
         
         for (let i = 0; i < 30; i++) {
             const particle = document.createElement('div');
@@ -227,7 +232,7 @@ class ComponentRenderer {
                 if (target) {
                     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     target.style.transition = 'box-shadow 0.5s ease';
-                    target.style.boxShadow = '0 0 40px rgba(168, 85, 247, 0.5)';
+                    target.style.boxShadow = `0 0 40px ${THEME.rgba('--color-primary-rgb', 0.5, '168, 85, 247')}`;
                     setTimeout(() => { target.style.boxShadow = ''; }, 2000);
                 }
             });

@@ -20,10 +20,10 @@ class ChartManager {
             tooltip: {
                 trigger: 'item',
                 formatter: '{b}: {c}%',
-                backgroundColor: 'rgba(20, 20, 35, 0.95)',
-                borderColor: 'rgba(168, 85, 247, 0.3)',
+                backgroundColor: THEME.get('--bg-surface-strong', 'rgba(20, 20, 35, 0.95)'),
+                borderColor: THEME.get('--border-glass', 'rgba(168, 85, 247, 0.3)'),
                 borderWidth: 1,
-                textStyle: { color: '#f8fafc' },
+                textStyle: { color: THEME.get('--text-strong', '#f8fafc') },
                 extraCssText: 'backdrop-filter: blur(10px); border-radius: 8px;'
             },
             series: [{
@@ -43,23 +43,23 @@ class ChartManager {
                     show: true,
                     position: 'inside',
                     formatter: '{b}\n{c}%',
-                    color: '#fff',
+                    color: THEME.get('--color-white', '#fff'),
                     fontSize: 13,
                     fontWeight: 600,
-                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                    textShadow: `0 2px 4px ${THEME.rgba('--color-black-rgb', 0.3, '0, 0, 0')}`
                 },
                 labelLine: { show: false },
                 itemStyle: {
-                    borderColor: 'rgba(168, 85, 247, 0.5)',
+                    borderColor: THEME.rgba('--color-primary-rgb', 0.5, '168, 85, 247'),
                     borderWidth: 2,
                     shadowBlur: 20,
-                    shadowColor: 'rgba(168, 85, 247, 0.3)'
+                    shadowColor: THEME.rgba('--color-primary-rgb', 0.3, '168, 85, 247')
                 },
                 emphasis: {
                     label: { fontSize: 15 },
                     itemStyle: {
                         shadowBlur: 30,
-                        shadowColor: 'rgba(168, 85, 247, 0.5)'
+                        shadowColor: THEME.rgba('--color-primary-rgb', 0.5, '168, 85, 247')
                     }
                 },
                 data: funnelData.map(item => ({
@@ -93,17 +93,17 @@ class ChartManager {
             legend: {
                 data: radarData.series.map(s => s.name),
                 bottom: 0,
-                textStyle: { color: '#94a3b8', fontSize: 12 },
+                textStyle: { color: THEME.get('--text-base', '#94a3b8'), fontSize: 12 },
                 itemWidth: 16,
                 itemHeight: 10,
                 itemGap: 20
             },
             tooltip: {
                 trigger: 'item',
-                backgroundColor: 'rgba(20, 20, 35, 0.95)',
-                borderColor: 'rgba(168, 85, 247, 0.3)',
+                backgroundColor: THEME.get('--bg-surface-strong', 'rgba(20, 20, 35, 0.95)'),
+                borderColor: THEME.get('--border-glass', 'rgba(168, 85, 247, 0.3)'),
                 borderWidth: 1,
-                textStyle: { color: '#f8fafc' },
+                textStyle: { color: THEME.get('--text-strong', '#f8fafc') },
                 extraCssText: 'backdrop-filter: blur(10px); border-radius: 8px;'
             },
             radar: {
@@ -113,24 +113,27 @@ class ChartManager {
                 center: ['50%', '48%'],
                 radius: '65%',
                 axisName: {
-                    color: '#94a3b8',
+                    color: THEME.get('--text-base', '#94a3b8'),
                     fontSize: 12,
                     fontWeight: 500
                 },
                 splitLine: {
                     lineStyle: {
-                        color: 'rgba(168, 85, 247, 0.15)',
+                        color: THEME.rgba('--color-primary-rgb', 0.15, '168, 85, 247'),
                         width: 1
                     }
                 },
                 splitArea: {
                     areaStyle: {
-                        color: ['rgba(168, 85, 247, 0.02)', 'rgba(168, 85, 247, 0.06)']
+                        color: [
+                            THEME.rgba('--color-primary-rgb', 0.02, '168, 85, 247'),
+                            THEME.rgba('--color-primary-rgb', 0.06, '168, 85, 247')
+                        ]
                     }
                 },
                 axisLine: {
                     lineStyle: {
-                        color: 'rgba(168, 85, 247, 0.2)'
+                        color: THEME.rgba('--color-primary-rgb', 0.2, '168, 85, 247')
                     }
                 }
             },
@@ -150,7 +153,7 @@ class ChartManager {
                     areaStyle: { color: s.areaColor },
                     itemStyle: {
                         color: s.color,
-                        borderColor: '#fff',
+                        borderColor: THEME.get('--color-white', '#fff'),
                         borderWidth: 2
                     }
                 }))
