@@ -1,76 +1,433 @@
 /* ========================================
-   CSS 变量 - 设计系统
+   设计变量 - 统一设计系统（Design Tokens）
+
+   层次：
+     1. 基础色板 primitives：--color-{色相}-{色阶}，并提供同名 -rgb 通道变量
+     2. 语义角色 semantic：--color-primary / --color-success / --color-text-* …
+        状态色、文字色、主色调只在这一层建立关系，组件只认语义名
+     3. 派生关系 derived：
+        · 深浅：--color-{角色}-light / -dark 指向不同色阶
+        · 透明：--color-{角色}-a{NN}（NN = 透明度 × 100），由 -rgb 通道派生
+
+   统一共用写法（消费侧必须带字面量回退，变量缺失时回退到默认值）：
+     color:        var(--color-primary, #a855f7);
+     浅/深档：      var(--color-primary-light, #c084fc) / var(--color-danger-dark, #dc2626)
+     透明色：       var(--color-primary-a40, rgba(168, 85, 247, 0.4))
+     任意透明度：   rgba(var(--color-primary-rgb, 168, 85, 247), 0.42)
+     JS / Canvas：  Theme.hex('primary') / Theme.rgba('primary', 0.4)（自带默认值）
    ======================================== */
 
 :root {
-    /* 主色调 */
-    --bg-dark: #0a0a0f;
-    --bg-darker: #050508;
-    --bg-card: rgba(20, 20, 35, 0.7);
-    --bg-card-hover: rgba(30, 30, 50, 0.8);
-    
-    /* 霓虹色系 */
-    --neon-purple: #a855f7;
-    --neon-purple-light: #c084fc;
-    --neon-pink: #ec4899;
-    --neon-pink-light: #f472b6;
-    --neon-cyan: #06b6d4;
-    --neon-cyan-light: #22d3ee;
-    --neon-green: #10b981;
-    --neon-green-light: #34d399;
-    --neon-blue: #3b82f6;
-    --neon-orange: #f97316;
-    --neon-yellow: #eab308;
-    
+    /* ========== 1. 基础色板（原色与 RGB 通道） ========== */
+    /* 紫（品牌主色家族） */
+    --color-purple-400: #c084fc;
+    --color-purple-400-rgb: 192, 132, 252;
+    --color-purple-500: #a855f7;
+    --color-purple-500-rgb: 168, 85, 247;
+
+    /* 粉 */
+    --color-pink-400: #f472b6;
+    --color-pink-400-rgb: 244, 114, 182;
+    --color-pink-500: #ec4899;
+    --color-pink-500-rgb: 236, 72, 153;
+
+    /* 青 */
+    --color-cyan-400: #22d3ee;
+    --color-cyan-400-rgb: 34, 211, 238;
+    --color-cyan-500: #06b6d4;
+    --color-cyan-500-rgb: 6, 182, 212;
+
+    /* 绿（成功色家族） */
+    --color-green-400: #34d399;
+    --color-green-400-rgb: 52, 211, 153;
+    --color-green-500: #10b981;
+    --color-green-500-rgb: 16, 185, 129;
+    --color-green-600: #059669;
+    --color-green-600-rgb: 5, 150, 105;
+
+    /* 蓝（信息色） */
+    --color-blue-500: #3b82f6;
+    --color-blue-500-rgb: 59, 130, 246;
+
+    /* 红（危险色家族） */
+    --color-red-500: #ef4444;
+    --color-red-500-rgb: 239, 68, 68;
+    --color-red-600: #dc2626;
+    --color-red-600-rgb: 220, 38, 38;
+
+    /* 橙 / 琥珀（警告色家族） / 黄 */
+    --color-orange-500: #f97316;
+    --color-orange-500-rgb: 249, 115, 22;
+    --color-amber-500: #f59e0b;
+    --color-amber-500-rgb: 245, 158, 11;
+    --color-yellow-500: #eab308;
+    --color-yellow-500-rgb: 234, 179, 8;
+
+    /* 中性色板 */
+    --color-slate-50: #f8fafc;
+    --color-slate-50-rgb: 248, 250, 252;
+    --color-slate-400: #94a3b8;
+    --color-slate-400-rgb: 148, 163, 184;
+    --color-slate-500: #64748b;
+    --color-slate-500-rgb: 100, 116, 139;
+    --color-white: #ffffff;
+    --color-white-rgb: 255, 255, 255;
+    --color-black: #000000;
+    --color-black-rgb: 0, 0, 0;
+
+    /* 深色底（背景/容器家族） */
+    --color-ink-900: #050508;
+    --color-ink-900-rgb: 5, 5, 8;
+    --color-ink-800: #0a0a0f;
+    --color-ink-800-rgb: 10, 10, 15;
+    --color-ink-850: #0a0a12;
+    --color-ink-850-rgb: 10, 10, 18;
+    --color-ink-700: #141423;
+    --color-ink-700-rgb: 20, 20, 35;
+    --color-ink-600: #1e1e32;
+    --color-ink-600-rgb: 30, 30, 50;
+
+    /* ========== 2. 语义色（主色 / 状态色 / 文字色的关系在此统一表达） ========== */
+    /* 品牌主色 */
+    --color-primary: var(--color-purple-500, #a855f7);
+    --color-primary-rgb: var(--color-purple-500-rgb, 168, 85, 247);
+    --color-primary-light: var(--color-purple-400, #c084fc);
+    --color-primary-light-rgb: var(--color-purple-400-rgb, 192, 132, 252);
+
+    /* 品牌点缀色 */
+    --color-pink: var(--color-pink-500, #ec4899);
+    --color-pink-rgb: var(--color-pink-500-rgb, 236, 72, 153);
+    --color-pink-light: var(--color-pink-400, #f472b6);
+    --color-pink-light-rgb: var(--color-pink-400-rgb, 244, 114, 182);
+
+    --color-cyan: var(--color-cyan-500, #06b6d4);
+    --color-cyan-rgb: var(--color-cyan-500-rgb, 6, 182, 212);
+    --color-cyan-light: var(--color-cyan-400, #22d3ee);
+    --color-cyan-light-rgb: var(--color-cyan-400-rgb, 34, 211, 238);
+
     /* 状态色 */
-    --success: #10b981;
-    --warning: #f59e0b;
-    --error: #ef4444;
-    --info: #3b82f6;
-    
+    --color-success: var(--color-green-500, #10b981);
+    --color-success-rgb: var(--color-green-500-rgb, 16, 185, 129);
+    --color-success-light: var(--color-green-400, #34d399);
+    --color-success-light-rgb: var(--color-green-400-rgb, 52, 211, 153);
+    --color-success-dark: var(--color-green-600, #059669);
+    --color-success-dark-rgb: var(--color-green-600-rgb, 5, 150, 105);
+
+    --color-danger: var(--color-red-500, #ef4444);
+    --color-danger-rgb: var(--color-red-500-rgb, 239, 68, 68);
+    --color-danger-dark: var(--color-red-600, #dc2626);
+    --color-danger-dark-rgb: var(--color-red-600-rgb, 220, 38, 38);
+
+    --color-warning: var(--color-amber-500, #f59e0b);
+    --color-warning-rgb: var(--color-amber-500-rgb, 245, 158, 11);
+
+    --color-info: var(--color-blue-500, #3b82f6);
+    --color-info-rgb: var(--color-blue-500-rgb, 59, 130, 246);
+
+    /* 状态渐变搭档色（保持与状态色同一来源） */
+    --color-orange: var(--color-orange-500, #f97316);
+    --color-orange-rgb: var(--color-orange-500-rgb, 249, 115, 22);
+    --color-yellow: var(--color-yellow-500, #eab308);
+    --color-yellow-rgb: var(--color-yellow-500-rgb, 234, 179, 8);
+
     /* 文字色 */
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    
-    /* 边框 */
-    --glass-border: rgba(168, 85, 247, 0.3);
-    --glass-border-hover: rgba(168, 85, 247, 0.5);
-    
-    /* 阴影 */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.4);
-    --shadow-glow-purple: 0 0 30px rgba(168, 85, 247, 0.4);
-    --shadow-glow-pink: 0 0 30px rgba(236, 72, 153, 0.4);
-    --shadow-glow-cyan: 0 0 30px rgba(6, 182, 212, 0.4);
-    
-    /* 渐变 */
-    --gradient-purple-pink: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
-    --gradient-cyan-green: linear-gradient(135deg, var(--neon-cyan), var(--neon-green));
-    --gradient-blue-purple: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
-    
-    /* 间距 */
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
-    --spacing-2xl: 48px;
-    
-    /* 圆角 */
-    --radius-sm: 6px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 24px;
+    --color-text-primary: var(--color-slate-50, #f8fafc);
+    --color-text-secondary: var(--color-slate-400, #94a3b8);
+    --color-text-muted: var(--color-slate-500, #64748b);
+    --color-text-inverse: var(--color-white, #ffffff);
+
+    /* 背景与表面 */
+    --color-bg-base: var(--color-ink-800, #0a0a0f);
+    --color-bg-deep: var(--color-ink-900, #050508);
+    --color-surface-card: rgba(var(--color-ink-700-rgb, 20, 20, 35), 0.7);
+    --color-surface-card-hover: rgba(var(--color-ink-600-rgb, 30, 30, 50), 0.8);
+    --color-surface-elevated: rgba(var(--color-ink-700-rgb, 20, 20, 35), 0.95);
+    --color-surface-sidebar: rgba(var(--color-ink-850-rgb, 10, 10, 18), 0.92);
+    --color-surface-overlay: rgba(var(--color-ink-700-rgb, 20, 20, 35), 0.5);
+    --color-surface-overlay-hover: rgba(var(--color-ink-600-rgb, 30, 30, 50), 0.7);
+    --color-surface-inset: rgba(var(--color-black-rgb, 0, 0, 0), 0.35);
+    --color-surface-inset-hover: rgba(var(--color-black-rgb, 0, 0, 0), 0.5);
+    --color-surface-track: rgba(var(--color-black-rgb, 0, 0, 0), 0.3);
+
+    /* 玻璃描边（主色派生） */
+    --color-border-glass: rgba(var(--color-primary-rgb, 168, 85, 247), 0.3);
+    --color-border-glass-hover: rgba(var(--color-primary-rgb, 168, 85, 247), 0.5);
+
+    /* ========== 3a. 派生透明度：主色 a02–a90（NN = 透明度 × 100） ========== */
+    --color-primary-a02: rgba(var(--color-primary-rgb, 168, 85, 247), 0.02);
+    --color-primary-a03: rgba(var(--color-primary-rgb, 168, 85, 247), 0.03);
+    --color-primary-a06: rgba(var(--color-primary-rgb, 168, 85, 247), 0.06);
+    --color-primary-a08: rgba(var(--color-primary-rgb, 168, 85, 247), 0.08);
+    --color-primary-a10: rgba(var(--color-primary-rgb, 168, 85, 247), 0.1);
+    --color-primary-a12: rgba(var(--color-primary-rgb, 168, 85, 247), 0.12);
+    --color-primary-a15: rgba(var(--color-primary-rgb, 168, 85, 247), 0.15);
+    --color-primary-a20: rgba(var(--color-primary-rgb, 168, 85, 247), 0.2);
+    --color-primary-a25: rgba(var(--color-primary-rgb, 168, 85, 247), 0.25);
+    --color-primary-a30: rgba(var(--color-primary-rgb, 168, 85, 247), 0.3);
+    --color-primary-a35: rgba(var(--color-primary-rgb, 168, 85, 247), 0.35);
+    --color-primary-a40: rgba(var(--color-primary-rgb, 168, 85, 247), 0.4);
+    --color-primary-a50: rgba(var(--color-primary-rgb, 168, 85, 247), 0.5);
+    --color-primary-a60: rgba(var(--color-primary-rgb, 168, 85, 247), 0.6);
+    --color-primary-a75: rgba(var(--color-primary-rgb, 168, 85, 247), 0.75);
+    --color-primary-a85: rgba(var(--color-primary-rgb, 168, 85, 247), 0.85);
+    --color-primary-a90: rgba(var(--color-primary-rgb, 168, 85, 247), 0.9);
+
+    /* 粉色 */
+    --color-pink-a10: rgba(var(--color-pink-rgb, 236, 72, 153), 0.1);
+    --color-pink-a12: rgba(var(--color-pink-rgb, 236, 72, 153), 0.12);
+    --color-pink-a15: rgba(var(--color-pink-rgb, 236, 72, 153), 0.15);
+    --color-pink-a25: rgba(var(--color-pink-rgb, 236, 72, 153), 0.25);
+    --color-pink-a30: rgba(var(--color-pink-rgb, 236, 72, 153), 0.3);
+    --color-pink-a40: rgba(var(--color-pink-rgb, 236, 72, 153), 0.4);
+    --color-pink-a70: rgba(var(--color-pink-rgb, 236, 72, 153), 0.7);
+    --color-pink-a80: rgba(var(--color-pink-rgb, 236, 72, 153), 0.8);
+    --color-pink-a85: rgba(var(--color-pink-rgb, 236, 72, 153), 0.85);
+
+    /* 青色 */
+    --color-cyan-a08: rgba(var(--color-cyan-rgb, 6, 182, 212), 0.08);
+    --color-cyan-a10: rgba(var(--color-cyan-rgb, 6, 182, 212), 0.1);
+    --color-cyan-a15: rgba(var(--color-cyan-rgb, 6, 182, 212), 0.15);
+    --color-cyan-a30: rgba(var(--color-cyan-rgb, 6, 182, 212), 0.3);
+    --color-cyan-a40: rgba(var(--color-cyan-rgb, 6, 182, 212), 0.4);
+
+    /* 成功色（绿） */
+    --color-success-a02: rgba(var(--color-success-rgb, 16, 185, 129), 0.02);
+    --color-success-a03: rgba(var(--color-success-rgb, 16, 185, 129), 0.03);
+    --color-success-a08: rgba(var(--color-success-rgb, 16, 185, 129), 0.08);
+    --color-success-a10: rgba(var(--color-success-rgb, 16, 185, 129), 0.1);
+    --color-success-a15: rgba(var(--color-success-rgb, 16, 185, 129), 0.15);
+    --color-success-a20: rgba(var(--color-success-rgb, 16, 185, 129), 0.2);
+    --color-success-a35: rgba(var(--color-success-rgb, 16, 185, 129), 0.35);
+    --color-success-a40: rgba(var(--color-success-rgb, 16, 185, 129), 0.4);
+    --color-success-a50: rgba(var(--color-success-rgb, 16, 185, 129), 0.5);
+
+    /* 危险色（红） */
+    --color-danger-a02: rgba(var(--color-danger-rgb, 239, 68, 68), 0.02);
+    --color-danger-a03: rgba(var(--color-danger-rgb, 239, 68, 68), 0.03);
+    --color-danger-a08: rgba(var(--color-danger-rgb, 239, 68, 68), 0.08);
+    --color-danger-a15: rgba(var(--color-danger-rgb, 239, 68, 68), 0.15);
+    --color-danger-a20: rgba(var(--color-danger-rgb, 239, 68, 68), 0.2);
+    --color-danger-a35: rgba(var(--color-danger-rgb, 239, 68, 68), 0.35);
+    --color-danger-a40: rgba(var(--color-danger-rgb, 239, 68, 68), 0.4);
+    --color-danger-a50: rgba(var(--color-danger-rgb, 239, 68, 68), 0.5);
+    --color-danger-a85: rgba(var(--color-danger-rgb, 239, 68, 68), 0.85);
+    --color-danger-a95: rgba(var(--color-danger-rgb, 239, 68, 68), 0.95);
+
+    /* 警告色（琥珀） */
+    --color-warning-a20: rgba(var(--color-warning-rgb, 245, 158, 11), 0.2);
+    --color-warning-a40: rgba(var(--color-warning-rgb, 245, 158, 11), 0.4);
+    --color-warning-a50: rgba(var(--color-warning-rgb, 245, 158, 11), 0.5);
+
+    /* 中性遮罩（白 / 黑） */
+    --color-white-a06: rgba(var(--color-white-rgb, 255, 255, 255), 0.06);
+    --color-white-a08: rgba(var(--color-white-rgb, 255, 255, 255), 0.08);
+    --color-white-a10: rgba(var(--color-white-rgb, 255, 255, 255), 0.1);
+    --color-white-a15: rgba(var(--color-white-rgb, 255, 255, 255), 0.15);
+    --color-white-a20: rgba(var(--color-white-rgb, 255, 255, 255), 0.2);
+    --color-white-a30: rgba(var(--color-white-rgb, 255, 255, 255), 0.3);
+    --color-white-a50: rgba(var(--color-white-rgb, 255, 255, 255), 0.5);
+    --color-black-a20: rgba(var(--color-black-rgb, 0, 0, 0), 0.2);
+    --color-black-a30: rgba(var(--color-black-rgb, 0, 0, 0), 0.3);
+    --color-black-a35: rgba(var(--color-black-rgb, 0, 0, 0), 0.35);
+    --color-black-a40: rgba(var(--color-black-rgb, 0, 0, 0), 0.4);
+    --color-black-a50: rgba(var(--color-black-rgb, 0, 0, 0), 0.5);
+
+    /* ========== 3b. 渐变（语义色的组合派生） ========== */
+    --gradient-brand: linear-gradient(135deg,
+        var(--color-primary, #a855f7),
+        var(--color-pink, #ec4899));
+    --gradient-brand-v: linear-gradient(180deg,
+        var(--color-primary, #a855f7),
+        var(--color-pink, #ec4899));
+    --gradient-brand-v-light: linear-gradient(180deg,
+        var(--color-primary-light, #c084fc),
+        var(--color-pink-light, #f472b6));
+    --gradient-brand-strong: linear-gradient(135deg,
+        var(--color-primary-a85, rgba(168, 85, 247, 0.85)),
+        var(--color-pink-a85, rgba(236, 72, 153, 0.85)));
+    --gradient-accent: linear-gradient(135deg,
+        var(--color-cyan, #06b6d4),
+        var(--color-success, #10b981));
+    --gradient-danger: linear-gradient(135deg,
+        var(--color-danger, #ef4444),
+        var(--color-danger-dark, #dc2626));
+    --gradient-success: linear-gradient(135deg,
+        var(--color-success, #10b981),
+        var(--color-success-dark, #059669));
+    --gradient-score-danger: linear-gradient(90deg,
+        var(--color-danger, #ef4444),
+        var(--color-orange, #f97316));
+    --gradient-score-success: linear-gradient(90deg,
+        var(--color-success, #10b981),
+        var(--color-cyan, #06b6d4));
+    --gradient-toast-success: linear-gradient(180deg,
+        var(--color-success, #10b981),
+        var(--color-cyan, #06b6d4));
+    --gradient-toast-danger: linear-gradient(180deg,
+        var(--color-danger, #ef4444),
+        var(--color-orange, #f97316));
+    --gradient-toast-warning: linear-gradient(180deg,
+        var(--color-warning, #f59e0b),
+        var(--color-yellow, #eab308));
+    --gradient-toast-info: linear-gradient(180deg,
+        var(--color-primary, #a855f7),
+        var(--color-pink, #ec4899));
+    --gradient-progress-success: linear-gradient(90deg,
+        var(--color-success, #10b981),
+        var(--color-cyan, #06b6d4));
+    --gradient-progress-danger: linear-gradient(90deg,
+        var(--color-danger, #ef4444),
+        var(--color-orange, #f97316));
+    --gradient-progress-warning: linear-gradient(90deg,
+        var(--color-warning, #f59e0b),
+        var(--color-yellow, #eab308));
+    --gradient-progress-info: linear-gradient(90deg,
+        var(--color-primary, #a855f7),
+        var(--color-pink, #ec4899));
+
+    /* ========== 3c. 阴影（几何 + 语义色透明派生） ========== */
+    --shadow-sm: 0 2px 8px var(--color-black-a20, rgba(0, 0, 0, 0.2));
+    --shadow-md: 0 8px 32px var(--color-black-a30, rgba(0, 0, 0, 0.3));
+    --shadow-lg: 0 20px 60px var(--color-black-a40, rgba(0, 0, 0, 0.4));
+    --shadow-inset-hairline: inset 0 1px 0 var(--color-white-a08, rgba(255, 255, 255, 0.08));
+    --shadow-toast:
+        0 10px 40px var(--color-black-a40, rgba(0, 0, 0, 0.4)),
+        0 0 0 1px var(--color-white-a08, rgba(255, 255, 255, 0.08)),
+        inset 0 1px 0 var(--color-white-a10, rgba(255, 255, 255, 0.1));
+    --shadow-sidebar:
+        -10px 0 40px var(--color-black-a50, rgba(0, 0, 0, 0.5)),
+        -4px 0 20px var(--color-primary-a15, rgba(168, 85, 247, 0.15));
+    --shadow-toggle: -4px 0 20px var(--color-primary-a40, rgba(168, 85, 247, 0.4));
+    --shadow-toggle-hover: -6px 0 30px var(--color-primary-a60, rgba(168, 85, 247, 0.6));
+    --shadow-gap-card: 4px 0 20px var(--color-primary-a20, rgba(168, 85, 247, 0.2));
+
+    /* 辉光：同一主色/状态色按 小/中/大/柔 派生 */
+    --shadow-glow-primary: 0 0 30px var(--color-primary-a40, rgba(168, 85, 247, 0.4));
+    --shadow-glow-primary-sm: 0 0 10px var(--color-primary-a50, rgba(168, 85, 247, 0.5));
+    --shadow-glow-primary-md: 0 0 20px var(--color-primary-a50, rgba(168, 85, 247, 0.5));
+    --shadow-glow-primary-soft: 0 0 60px var(--color-primary-a30, rgba(168, 85, 247, 0.3));
+    --shadow-glow-pink-md: 0 0 40px var(--color-pink-a70, rgba(236, 72, 153, 0.7));
+    --shadow-glow-success-sm: 0 0 10px var(--color-success-a40, rgba(16, 185, 129, 0.4));
+    --shadow-glow-success-md: 0 0 20px var(--color-success-a50, rgba(16, 185, 129, 0.5));
+    --shadow-glow-danger-sm: 0 0 10px var(--color-danger-a40, rgba(239, 68, 68, 0.4));
+    --shadow-glow-danger-md: 0 0 20px var(--color-danger-a50, rgba(239, 68, 68, 0.5));
+    --shadow-glow-warning-md: 0 0 20px var(--color-warning-a50, rgba(245, 158, 11, 0.5));
+    --shadow-tag-primary: 0 4px 12px var(--color-primary-a30, rgba(168, 85, 247, 0.3));
+    --shadow-tag-pink: 0 4px 12px var(--color-pink-a30, rgba(236, 72, 153, 0.3));
+    --shadow-tag-cyan: 0 4px 12px var(--color-cyan-a30, rgba(6, 182, 212, 0.3));
+    --shadow-tag-success: 0 2px 10px var(--color-success-a40, rgba(16, 185, 129, 0.4));
+    --shadow-tag-danger: 0 2px 10px var(--color-danger-a40, rgba(239, 68, 68, 0.4));
+    --shadow-text-success: 0 0 20px var(--color-success-a50, rgba(16, 185, 129, 0.5));
+
+    /* ========== 间距（4px 基准，数字即像素值） ========== */
+    --spacing-02: 2px;
+    --spacing-03: 3px;
+    --spacing-04: 4px;
+    --spacing-05: 5px;
+    --spacing-06: 6px;
+    --spacing-08: 8px;
+    --spacing-10: 10px;
+    --spacing-12: 12px;
+    --spacing-14: 14px;
+    --spacing-16: 16px;
+    --spacing-18: 18px;
+    --spacing-20: 20px;
+    --spacing-24: 24px;
+    --spacing-28: 28px;
+    --spacing-32: 32px;
+    --spacing-40: 40px;
+    --spacing-48: 48px;
+    --spacing-50: 50px;
+
+    /* 语义间距（面向布局场景，指向刻度） */
+    --space-section-gap: var(--spacing-40, 40px);
+    --space-grid-gap: var(--spacing-24, 24px);
+    --space-grid-gap-sm: var(--spacing-20, 20px);
+    --space-card-padding: var(--spacing-28, 28px);
+
+    /* ========== 圆角 ========== */
+    --radius-02: 2px;
+    --radius-03: 3px;
+    --radius-04: 4px;
+    --radius-06: 6px;
+    --radius-12: 12px;
+    --radius-16: 16px;
+    --radius-24: 24px;
     --radius-full: 9999px;
-    
-    /* 过渡 */
-    --transition-fast: 0.15s ease;
-    --transition-normal: 0.3s ease;
-    --transition-slow: 0.5s ease;
-    
-    /* 字体 */
-    --font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    /* 语义别名 */
+    --radius-sm: var(--radius-06, 6px);
+    --radius-md: var(--radius-12, 12px);
+    --radius-lg: var(--radius-16, 16px);
+    --radius-xl: var(--radius-24, 24px);
+
+    /* ========== 字体 ========== */
+    --font-family-base: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-family-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+
+    /* 字号（数字即像素值） */
+    --font-size-10: 10px;
+    --font-size-11: 11px;
+    --font-size-12: 12px;
+    --font-size-13: 13px;
+    --font-size-14: 14px;
+    --font-size-15: 15px;
+    --font-size-16: 16px;
+    --font-size-18: 18px;
+    --font-size-20: 20px;
+    --font-size-24: 24px;
+    --font-size-26: 26px;
+    --font-size-28: 28px;
+    --font-size-30: 30px;
+    --font-size-32: 32px;
+    --font-size-38: 38px;
+    --font-size-40: 40px;
+    --font-size-48: 48px;
+    --font-size-100: 100px;
+
+    /* 行高 */
+    --line-height-tight: 1.2;
+    --line-height-base: 1.6;
+    --line-height-relaxed: 1.7;
+
+    /* ========== 动效（时长 + 缓动，过渡组合统一派生） ========== */
+    --duration-fast: 0.15s;
+    --duration-normal: 0.3s;
+    --duration-slow: 0.5s;
+    --duration-toast-in: 0.4s;
+    --duration-toast-out: 0.3s;
+    --duration-fade: 0.6s;
+    --duration-sidebar: 0.4s;
+    --duration-score: 0.8s;
+    --duration-spin: 1s;
+    --duration-glow: 3s;
+    --duration-glow-sm: 2s;
+    --duration-bg: 10s;
+    --duration-float: 15s;
+
+    --ease-linear: linear;
+    --ease-standard: ease;
+    --ease-in-out: ease-in-out;
+    --ease-step-end: step-end;
+    --ease-decelerate: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+    --transition-fast: var(--duration-fast, 0.15s) var(--ease-standard, ease);
+    --transition-normal: var(--duration-normal, 0.3s) var(--ease-standard, ease);
+    --transition-slow: var(--duration-slow, 0.5s) var(--ease-standard, ease);
+    --transition-sidebar: var(--duration-sidebar, 0.4s) var(--ease-smooth, cubic-bezier(0.4, 0, 0.2, 1));
+    --transition-score: var(--duration-score, 0.8s) var(--ease-smooth, cubic-bezier(0.4, 0, 0.2, 1));
+
+    /* ========== 玻璃模糊 ========== */
+    --blur-glass-sm: 10px;
+    --blur-glass-md: 12px;
+    --blur-glass: 20px;
+    --blur-glass-lg: 30px;
+
+    /* ========== 层级 ========== */
+    --z-bg: -2;
+    --z-overlay: -1;
+    --z-sidebar-toggle: 1001;
+    --z-sidebar: 1002;
+    --z-toast: 10000;
 }
